@@ -1,0 +1,87 @@
+/* Exercise 1-24. Write a program to check a C program for rudimentary syntax
+errors like unmatched parentheses, brackets and braces. Don't forget about
+quotes, both single and double, escape sequences, and comments. (This program is
+hard if you do it in full generality.)*/
+
+#include <stdio.h>
+
+void skip_double_quote() {
+  int c;
+  while ((c = getchar()) != EOF) {
+    if (c == '\\') {
+      c = getchar();
+      if (c == EOF) {
+        printf("Error: EOF in escape sequence within double quote\n");
+        return;
+      }
+    } else if (c == '"')
+      return;
+  }
+  printf("Error: No matching double quote\n");
+}
+
+void skip_single_quote(int pos) {
+  int c;
+  while ((c = getchar()) != EOF) {
+    if (c == '\\') {
+      c = getchar();
+      if (c == EOF) {
+        printf("Error: EOF in escape sequence within single quote\n");
+        return;
+      }
+    } else if (c == '\'')
+      return;
+  }
+  printf("Error: No matching signle quote\n");
+}
+
+void skip_inline_comment(int pos) {
+  int c;
+  while ((c = getchar()) != '\n' && c != EOF)
+    ;
+}
+
+void skip_multiline_comment(int pos, int c) {
+  int c1 = c, c2;
+  while ((c2 = getchar()) != '\n' && c != EOF)
+    ;
+}
+
+int main() {
+  int c;
+  int stack[101], i = 0, pos = 0;
+  while ((c = getchar()) != EOF) {
+    if (c == '"')
+      skip_double_quote(pos);
+    if (c == '\'')
+      skip_single_quote(pos);
+    if (c == '/') {
+      c = getchar();
+      if (c == '/')
+        skip_inline_comment(pos);
+      else if (c == '*')
+        skip_multiline_comment(pos, c);
+    }
+    if (c == '(' || c == '{' || c == '[')
+      stack[i++] = c;
+    if (c == ')') {
+      if (stack[i] != '(') {
+        printf("Error unmatched parantheses");
+        return 1;
+      }
+    }
+    if (c == '}') {
+      if (stack[i] != '{') {
+        printf("Error unmatched braces");
+        return 1;
+      }
+    }
+    if (c == ']') {
+      if (stack[i] != '[') {
+        printf("Error unmatched square brackets");
+        return 1;
+      }
+    }
+  }
+  return 0;
+}
